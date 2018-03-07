@@ -1,9 +1,7 @@
 package locker
 
 import (
-	"github.com/coreos/etcd/client"
 	"github.com/coreos/etcd/clientv3"
-	"github.com/coreos/go-etcd/etcd"
 )
 
 const (
@@ -26,11 +24,9 @@ type Client struct {
 //
 //     client := locker.New(etcdclient)
 //
-func New(etcdclient *etcd.Client, etcdClient client.Client, etcdClientv3 *clientv3.Client) Client {
+func New(etcdClientv3 *clientv3.Client) Client {
 	return Client{
 		Store: EtcdStore{
-			Etcd:         etcdclient,
-			EtcdClient:   etcdClient,
 			EtcdClientv3: etcdClientv3,
 		},
 	}
