@@ -1,8 +1,10 @@
 package locker
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/coreos/etcd/client"
 	"github.com/coreos/go-etcd/etcd"
 	"github.com/coreos/go-log/log"
 )
@@ -11,6 +13,11 @@ import (
 type EtcdStore struct {
 	// Etcd client used for storing locks.
 	Etcd *etcd.Client
+
+	EtcdClient client.Client
+
+	// Version of the etcd
+	Version string
 
 	// Directory in Etcd to store locks. Default: locker.
 	Directory string
@@ -24,9 +31,12 @@ type EtcdStore struct {
 // Get returns the value of a lock. LockNotFound will be returned if a
 // lock with the name isn't held.
 func (s EtcdStore) Get(name string) (string, error) {
+
 	s.Log.Infof("GET %s", name)
-	res, err := s.Etcd.Get(s.lockPath(name), false, false)
+	kapi := client.NewKeysAPI(s.EtcdClient)
+	res, err := kapi.Get(context.Background(), s.lockPath(name), nil)
 	if err == nil {
+		fmt.Println(res.Node.Value)
 		return res.Node.Value, nil
 	}
 
@@ -51,6 +61,10 @@ func (s EtcdStore) AcquireOrFreshenLock(name, value string) error {
 
 	key := s.lockPath(name)
 
+	// client
+
+	// end client
+
 	s.Log.Debugf("ACQUIRE %s CompareAndSwap on %s", name, key)
 	_, err := s.Etcd.CompareAndSwap(key, value, s.lockTTL(), value, 0)
 	if err == nil {
@@ -68,7 +82,8 @@ func (s EtcdStore) AcquireOrFreshenLock(name, value string) error {
 			// it as part of CompareAndSwap. Potential for a race condition here,
 			// where another client is able to do a CompareAndSwap and then we
 			// stomp on it with our dumb Set.
-			if _, err := s.Etcd.Set(key, value, 1); err != nil {
+			kapi := client.NewKeysAPI(s.EtcdClient)
+			if _, err := kapi.Set(context.Background(), key, value, &client.SetOptions{TTL: 1}); err != nil {
 				// wasn't able to force-set the key, no idea what happened
 				s.Log.Errorf("ACQUIRE %s Set on %s key failed", name, key, err)
 				return err
@@ -90,7 +105,8 @@ func (s EtcdStore) AcquireOrFreshenLock(name, value string) error {
 
 func (s EtcdStore) Delete(name string) error {
 	fmt.Printf("DELETE %s\n", name)
-	_, err := s.Etcd.Delete(s.lockPath(name), true)
+	kapi := client.NewKeysAPI(s.EtcdClient)
+	_, err := kapi.Delete(context.Background(), s.lockPath(name), &client.DeleteOptions{Recursive: true})
 	fmt.Printf("DELETED %s\n", name)
 	return err
 }
