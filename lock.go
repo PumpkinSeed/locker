@@ -64,16 +64,10 @@ func (c Client) lock(name, value string, owned chan<- bool, quit <-chan bool, do
 		case <-quit:
 			return nil
 		case <-tick:
-			state, err := c.updateNode(name, value)
-			if err != nil {
-				return err
+			if lastState != state {
+				lastState = state
 			}
 
-			if owned != nil && lastState != state {
-				owned <- state == acquired
-			}
-
-			lastState = state
 		}
 	}
 
