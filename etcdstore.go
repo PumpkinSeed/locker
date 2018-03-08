@@ -2,7 +2,6 @@ package locker
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/go-log/log"
@@ -15,9 +14,6 @@ type EtcdStore struct {
 	// Version of the etcd
 	Version string
 
-	// Directory in Etcd to store locks. Default: locker.
-	Directory string
-
 	// TTL is the time-to-live for the lock. Default: 5s.
 	TTL int64
 
@@ -27,9 +23,11 @@ type EtcdStore struct {
 // Get returns the value of a lock. LockNotFound will be returned if a
 // lock with the name isn't held.
 func (s EtcdStore) Get(name string) (string, error) {
+	l("Get", "entry")
 	resp, err := s.EtcdClientv3.Get(context.Background(), name)
-	fmt.Println(resp)
+	l("Get", resp)
 	if resp.Count > 0 {
+		l("Get", string(resp.Kvs[0].Value))
 		return string(resp.Kvs[0].Value), err
 	}
 	return "", nil
@@ -38,34 +36,23 @@ func (s EtcdStore) Get(name string) (string, error) {
 // AcquireOrFreshenLock will aquires a named lock if it isn't already
 // held, or updates its TTL if it is.
 func (s EtcdStore) AcquireOrFreshenLock(name, value string) error {
+	l("AcquireOrFreshenLock", "entry")
 	lresp, err := s.EtcdClientv3.Grant(context.Background(), s.lockTTL())
 	if err != nil {
 		return err
 	}
+
+	l("AcquireOrFreshenLock", lresp.ID)
 	_, err = s.EtcdClientv3.Put(context.Background(), name, value, clientv3.WithLease(lresp.ID))
-	//fmt.Println(resp)
-	fmt.Println(err)
+
+	l("AcquireOrFreshenLock", "put happened")
 	return err
 }
 
 func (s EtcdStore) Delete(name string) error {
-	resp, err := s.EtcdClientv3.Delete(context.Background(), name)
-	fmt.Println(resp)
+	_, err := s.EtcdClientv3.Delete(context.Background(), name)
+	l("Delete", "delete happened")
 	return err
-}
-
-// directory will return the provided Directory or locker if nil.
-func (s EtcdStore) directory() string {
-	if s.Directory == "" {
-		return "locker"
-	}
-
-	return s.Directory
-}
-
-// lockPath gets the path to a lock in Etcd. Defaults to /locker/name
-func (s EtcdStore) lockPath(name string) string {
-	return s.directory() + "/" + name
 }
 
 // lockTTL gets the TTL of the locks being stored in Etcd. Defaults to

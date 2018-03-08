@@ -15,7 +15,7 @@ type Client struct {
 	// Store is what locker uses to persist locks.
 	Store Store
 
-	Quit chan bool
+	TTL int64
 }
 
 // New creates a default locker client using Etcd as a store. It requires

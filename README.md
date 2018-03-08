@@ -4,6 +4,12 @@
 
 **Forked from github.com/jagregory/locker**
 
+## Features
+
+- Lock/Unlock mechanism
+- Migrate to `github.com/coreos/etcd/clientv3`
+
+
 [![Godoc](https://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](https://godoc.org/github.com/PumpkinSeed/locker)
 
 A distributed lock service client for [etcd](https://github.com/coreos/etcd).
