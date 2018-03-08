@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-var debug = true
+var debug = false
 
 func l(where string, msg interface{}) {
 	if debug {
