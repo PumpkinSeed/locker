@@ -33,11 +33,11 @@ const DefaultValue = "ok"
 //     }
 //
 // Lock is a blocking call, so it's recommended to run it in a goroutine.
-func (c Client) Lock(name, value string, owned chan<- bool, quit <-chan bool) Report {
+func (c Client) Lock(name, value string, quit <-chan bool) Report {
 	report := c.Inspect(name)
 
 	var doneCh = make(chan bool)
-	go c.lock(name, value, owned, quit, doneCh)
+	go c.lock(name, value, quit, doneCh)
 	var done = <-doneCh
 	if done {
 		return report
@@ -47,7 +47,7 @@ func (c Client) Lock(name, value string, owned chan<- bool, quit <-chan bool) Re
 	return report
 }
 
-func (c Client) lock(name, value string, owned chan<- bool, quit <-chan bool, done chan<- bool) error {
+func (c Client) lock(name, value string, quit <-chan bool, done chan<- bool) error {
 	fmt.Println("UPDATE")
 	state, err := c.updateNode(name, value)
 	if err != nil {
@@ -64,16 +64,10 @@ func (c Client) lock(name, value string, owned chan<- bool, quit <-chan bool, do
 		case <-quit:
 			return nil
 		case <-tick:
-			state, err := c.updateNode(name, value)
-			if err != nil {
-				return err
+			if lastState != state {
+				lastState = state
 			}
 
-			if owned != nil && lastState != state {
-				owned <- state == acquired
-			}
-
-			lastState = state
 		}
 	}
 

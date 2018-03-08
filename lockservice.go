@@ -1,8 +1,7 @@
 package locker
 
 import (
-	"github.com/coreos/etcd/client"
-	"github.com/coreos/go-etcd/etcd"
+	"github.com/coreos/etcd/clientv3"
 )
 
 const (
@@ -16,7 +15,7 @@ type Client struct {
 	// Store is what locker uses to persist locks.
 	Store Store
 
-	Quit chan bool
+	TTL int64
 }
 
 // New creates a default locker client using Etcd as a store. It requires
@@ -25,11 +24,10 @@ type Client struct {
 //
 //     client := locker.New(etcdclient)
 //
-func New(etcdclient *etcd.Client, etcdClient client.Client) Client {
+func New(etcdClientv3 *clientv3.Client) Client {
 	return Client{
 		Store: EtcdStore{
-			Etcd:       etcdclient,
-			EtcdClient: etcdClient,
+			EtcdClientv3: etcdClientv3,
 		},
 	}
 }
