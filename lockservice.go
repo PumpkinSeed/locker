@@ -24,10 +24,11 @@ type Client struct {
 //
 //     client := locker.New(etcdclient)
 //
-func New(etcdClientv3 *clientv3.Client) Client {
+func New(etcdClientv3 *clientv3.Client, ttl int64) Client {
 	return Client{
 		Store: EtcdStore{
 			EtcdClientv3: etcdClientv3,
+			TTL:          ttl,
 		},
 	}
 }
