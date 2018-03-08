@@ -53,7 +53,7 @@ report := client.Lock(key, locker.DefaultValue, quit)
 
 ### Releasing the lock
 
-The fourth argument to `Lock` is a `quit` channel. Push anything into this channel to kill the locking, which will delete the locked key from the etcd.
+The third argument to `Lock` is a `quit` channel. Push anything into this channel to kill the locking, which will delete the locked key from the etcd.
 
 ```go
 client.Unlock(key, quit)
