@@ -11,6 +11,7 @@
 
 
 [![Godoc](https://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](https://godoc.org/github.com/PumpkinSeed/locker)
+[![Build Status](https://travis-ci.org/PumpkinSeed/locker.svg?branch=master)](https://travis-ci.org/PumpkinSeed/locker)
 
 A distributed lock service client for [etcd](https://github.com/coreos/etcd).
 

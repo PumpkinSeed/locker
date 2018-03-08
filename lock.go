@@ -2,7 +2,6 @@ package locker
 
 import (
 	"errors"
-	"fmt"
 	"time"
 )
 
@@ -36,19 +35,21 @@ const DefaultValue = "ok"
 func (c Client) Lock(name, value string, quit <-chan bool) Report {
 	report := c.Inspect(name)
 
-	var doneCh = make(chan bool)
-	go c.lock(name, value, quit, doneCh)
-	var done = <-doneCh
-	if done {
-		return report
+	if report.Msg == Success {
+		var doneCh = make(chan bool)
+		go c.lock(name, value, quit, doneCh)
+		var done = <-doneCh
+		if done {
+			return report
+		}
+		report.Err = errors.New("error happened")
 	}
 
-	report.Err = errors.New("error happened")
 	return report
 }
 
 func (c Client) lock(name, value string, quit <-chan bool, done chan<- bool) error {
-	fmt.Println("UPDATE")
+	l("lock", "Update")
 	state, err := c.updateNode(name, value)
 	if err != nil {
 		return err
@@ -56,7 +57,7 @@ func (c Client) lock(name, value string, quit <-chan bool, done chan<- bool) err
 	lastState := state
 	tick := time.Tick(time.Millisecond * 500)
 
-	fmt.Println("DONE")
+	l("lock", "Done")
 	done <- true
 
 	for {
