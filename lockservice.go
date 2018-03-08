@@ -1,6 +1,9 @@
 package locker
 
 import (
+	"context"
+	"time"
+
 	"github.com/coreos/etcd/clientv3"
 )
 
@@ -15,7 +18,7 @@ type Client struct {
 	// Store is what locker uses to persist locks.
 	Store Store
 
-	TTL int64
+	ctx context.Context
 }
 
 // New creates a default locker client using Etcd as a store. It requires
@@ -24,19 +27,27 @@ type Client struct {
 //
 //     client := locker.New(etcdclient)
 //
-func New(etcdClientv3 *clientv3.Client, ttl int64) Client {
+func New(machines []string, timeout int64, ttl int64, ctx context.Context) (Client, error) {
+	cli, err := clientv3.New(clientv3.Config{
+		Endpoints:   machines,
+		DialTimeout: time.Duration(timeout) * time.Second,
+	})
+	if err != nil {
+		return Client{}, err
+	}
 	return Client{
 		Store: EtcdStore{
-			EtcdClientv3: etcdClientv3,
+			EtcdClientv3: cli,
 			TTL:          ttl,
 		},
-	}
+		ctx: ctx,
+	}, nil
 }
 
 // Get returns the value of a lock. LockNotFound will be returned if a
 // lock with the name isn't held.
 func (c Client) Get(name string) (string, error) {
-	return c.Store.Get(name)
+	return c.Store.Get(c.ctx, name)
 }
 
 func (c Client) Inspect(name string) Report {
@@ -64,11 +75,11 @@ type Report struct {
 type Store interface {
 	// Get returns the value of a lock. LockNotFound will be returned if a
 	// lock with the name isn't held.
-	Get(name string) (string, error)
+	Get(ctx context.Context, name string) (string, error)
 
 	// AcquireOrFreshenLock will aquires a named lock if it isn't already
 	// held, or updates its TTL if it is.
-	AcquireOrFreshenLock(name, value string) error
+	AcquireOrFreshenLock(ctx context.Context, name, value string) error
 
-	Delete(name string) error
+	Delete(ctx context.Context, name string) error
 }

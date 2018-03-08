@@ -9,7 +9,7 @@ func TestGetOnValidLock(t *testing.T) {
 	store := &memoryStore{}
 	store.set(name, expectedValue)
 
-	val, err := Client{store}.Get(name)
+	val, err := Client{store, 2}.Get(name)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -21,7 +21,7 @@ func TestGetOnValidLock(t *testing.T) {
 
 func TestGetOnMissingLockReturnsLockNotFound(t *testing.T) {
 	store := &memoryStore{}
-	val, err := Client{store}.Get(name)
+	val, err := Client{store, 2}.Get(name)
 	if err == nil {
 		t.Error("Expected an error, didn't get one")
 	}
@@ -37,7 +37,7 @@ func TestGetOnMissingLockReturnsLockNotFound(t *testing.T) {
 
 func TestLockSetsKeyValue(t *testing.T) {
 	store := &memoryStore{}
-	client := Client{store}
+	client := Client{store, 2}
 
 	owned := make(chan bool)
 	quit := make(chan bool)

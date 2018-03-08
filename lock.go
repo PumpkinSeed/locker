@@ -77,13 +77,13 @@ func (c Client) lock(name, value string, quit <-chan bool, done chan<- bool) err
 
 func (c Client) Unlock(name string, quit chan<- bool) error {
 	quit <- true
-	return c.Store.Delete(name)
+	return c.Store.Delete(c.ctx, name)
 }
 
 // updateNode will update the lock node in the cluster, effectively just
 // updating the TTL of the key and ensuring our value is still in it.
 func (c Client) updateNode(name, value string) (lockState, error) {
-	if err := c.Store.AcquireOrFreshenLock(name, value); err != nil {
+	if err := c.Store.AcquireOrFreshenLock(c.ctx, name, value); err != nil {
 		if _, ok := err.(LockDenied); ok {
 			return released, nil
 		}

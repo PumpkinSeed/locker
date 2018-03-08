@@ -2,9 +2,10 @@ package locker
 
 import (
 	_ "fmt"
-	"github.com/coreos/go-etcd/etcd"
 	"testing"
 	"time"
+
+	"github.com/coreos/go-etcd/etcd"
 )
 
 var etcdclient *etcd.Client

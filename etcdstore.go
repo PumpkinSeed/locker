@@ -22,7 +22,7 @@ type EtcdStore struct {
 
 // Get returns the value of a lock. LockNotFound will be returned if a
 // lock with the name isn't held.
-func (s EtcdStore) Get(name string) (string, error) {
+func (s EtcdStore) Get(ctx context.Context, name string) (string, error) {
 	l("Get", "entry")
 	resp, err := s.EtcdClientv3.Get(context.Background(), name)
 	l("Get", resp)
@@ -35,7 +35,7 @@ func (s EtcdStore) Get(name string) (string, error) {
 
 // AcquireOrFreshenLock will aquires a named lock if it isn't already
 // held, or updates its TTL if it is.
-func (s EtcdStore) AcquireOrFreshenLock(name, value string) error {
+func (s EtcdStore) AcquireOrFreshenLock(ctx context.Context, name, value string) error {
 	l("AcquireOrFreshenLock", "entry")
 	lresp, err := s.EtcdClientv3.Grant(context.Background(), s.lockTTL())
 	if err != nil {
@@ -49,7 +49,7 @@ func (s EtcdStore) AcquireOrFreshenLock(name, value string) error {
 	return err
 }
 
-func (s EtcdStore) Delete(name string) error {
+func (s EtcdStore) Delete(ctx context.Context, name string) error {
 	_, err := s.EtcdClientv3.Delete(context.Background(), name)
 	l("Delete", "delete happened")
 	return err

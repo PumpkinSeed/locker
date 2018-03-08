@@ -1,6 +1,9 @@
 package locker
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 // Watch will create a watch on a lock and push value changes into the
 // valueChanges channel. An empty string indicates the lack of a lock.
@@ -27,7 +30,7 @@ func (c Client) Watch(name string, valueChanges chan<- string, quit <-chan bool)
 		case <-quit:
 			return nil
 		default:
-			v, err := c.Store.Get(name)
+			v, err := c.Store.Get(context.Background(), name)
 
 			if err != nil {
 				if _, ok := err.(LockNotFound); ok {
