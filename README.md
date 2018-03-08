@@ -8,6 +8,7 @@
 
 - Lock/Unlock mechanism
 - Migrate to `github.com/coreos/etcd/clientv3`
+- TTL
 
 
 [![Godoc](https://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](https://godoc.org/github.com/PumpkinSeed/locker)
