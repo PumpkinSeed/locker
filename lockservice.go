@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	Failure string = "failure"
+	Fail    string = "fail"
 	Success        = "success"
 )
 
@@ -55,7 +55,7 @@ func (c Client) Inspect(name string) Report {
 	if err == nil && len(v) > 0 {
 		return Report{
 			Err: nil,
-			Msg: Failure,
+			Msg: Fail,
 		}
 	}
 	return Report{
